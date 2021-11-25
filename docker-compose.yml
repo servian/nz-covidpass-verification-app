@@ -1,0 +1,15 @@
+version: "3.3"
+
+services:
+  web:
+    container_name: nz-covidpass-poc
+    image: node:12-alpine
+    command: sh -c "yarn && yarn serve"
+    tty: true
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    ports:
+      - 8080:8080
+    volumes:
+      - .:/app
+    working_dir: /app
