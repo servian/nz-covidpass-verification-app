@@ -11,8 +11,8 @@ This tool also validates if the pass:
 1. is a Base32 encoded NZCP Version 1
 2. is encoded as a CBOR
 3. has the correct protected headers
-4. is issued by New Zealand Ministry of Health by matching the iss
-5. is signed and validate the signature of the payload over the CBOR structure using the MOH public key
+4. is issued by New Zealand Ministry of Health by matching the iss in the payload
+5. is signed and validated by using the signature of the payload over the CBOR structure using the MOH public key
 6. hasn't expired
 
 ## Demo
