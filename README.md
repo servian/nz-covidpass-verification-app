@@ -16,7 +16,7 @@ This tool also validates if the pass:
 6. hasn't expired
 
 ## Demo
-For online demo of this application click [here](https://d1chdssarsi2bn.cloudfront.net)
+For online demo of this application click <a href="https://d1chdssarsi2bn.cloudfront.net" target="_blank">here</a>
 
 ## Technical details
 
