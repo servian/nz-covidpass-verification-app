@@ -8309,11 +8309,6 @@ utils-merge@1.0.1:
   resolved "https://registry.yarnpkg.com/utils-merge/-/utils-merge-1.0.1.tgz#9f95710f50a267947b2ccc124741c1028427e713"
   integrity sha1-n5VxD1CiZ5R7LMwSR0HBAoQn5xM=
 
-uuid-buffer@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/uuid-buffer/-/uuid-buffer-1.0.3.tgz#60958d8a6fac539441a274e50ef0a32715f97d45"
-  integrity sha1-YJWNim+sU5RBonTlDvCjJxX5fUU=
-
 uuid@^3.3.2, uuid@^3.4.0:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"

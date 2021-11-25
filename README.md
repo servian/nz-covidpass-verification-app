@@ -15,6 +15,8 @@ This tool also validates if the pass:
 5. is signed and validate the signature of the payload over the CBOR structure using the MOH public key
 6. hasn't expired
 
+## Demo
+For online demo of this application click [here](https://d1chdssarsi2bn.cloudfront.net)
 
 ## Technical details
 

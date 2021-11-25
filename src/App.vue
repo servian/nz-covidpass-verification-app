@@ -100,9 +100,9 @@ export default {
       this.onscreenLogs += 'Issuer public key:' + '\n';
       this.onscreenLogs += JSON.stringify(jwk, undefined, 2) + '\n' + '\n';
 
-      this.onscreenLogs += 'COSE Verification using public key, SigStructure message and signature:' + '\n';
+      this.onscreenLogs += 'COSE Verification using the resolved public key and CWT process:' + '\n';
       await this.verifySignature(jwk, base32DecodedBuffer);
-      this.onscreenLogs += 'Result: Signature matches, No tempering detected in payload' + '\n' + '\n';
+      this.onscreenLogs += 'Result: Signature matches, no tempering detected in payload.' + '\n' + '\n';
 
       return payload;
     },
