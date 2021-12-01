@@ -2,12 +2,13 @@
   <div id="app">
     <b-container class="mt-4">
       <b-row align-v="start">
-        <b-col order="2" order-sm="2" order-md="1" cols="12" sm ="12" md="7">
+        <b-col order="2" order-sm="2" order-md="1" cols="12" sm="12" md="7">
           <hr class="mb-4 pt-0 mt-0">
           <b-jumbotron header="NZ Covid Pass Verification" lead="Proof of concept for verification of My Vaccine Pass">
           </b-jumbotron>
           <hr class="my-4">
-          <h4 class="mb-3">The New Zealand COVID Pass is a digitally signed payload optimised for rendering via a 2D barcode for
+          <h4 class="mb-3">The New Zealand COVID Pass is a digitally signed payload optimised for rendering via a 2D
+            barcode for
             easy machine verifiability.</h4>
           <p class="decode-result">
             <b-alert :variant="alertBoxVariant" show>{{ prompt }}</b-alert>
@@ -39,7 +40,7 @@
 
 <script>
 import base32Decode from 'base32-decode';
-import cborLib from 'cbor';
+import cbor from 'cbor';
 import cose from 'cose-js';
 
 export default {
@@ -82,17 +83,14 @@ export default {
       }
 
       base32encoded = base32encoded[base32encoded.length - 1];
-      const base32DecodedBuffer = base32Decode(base32encoded, 'RFC4648');
+      const decodedBuffer = base32Decode(base32encoded, 'RFC4648');
+      const cborArray = await cbor.decodeAll(decodedBuffer);
 
-      const hexString = this.buffer2hex(base32DecodedBuffer);
-      this.onscreenLogs += 'Converted hexadecimal string:' + '\n';
-      this.onscreenLogs += hexString + '\n' + '\n';
-
-      const headers = await this.decodeHeaders(hexString);
+      const headers = await this.decodeHeaders(cborArray[0].value[0]);
       this.onscreenLogs += 'Extracted protected header:' + '\n';
       this.onscreenLogs += JSON.stringify(headers, undefined, 2) + '\n' + '\n';
 
-      const payload = await this.decodePayload(hexString);
+      const payload = await this.decodePayload(cborArray[0].value[2]);
       this.onscreenLogs += 'Extracted protected payload:' + '\n';
       this.onscreenLogs += JSON.stringify(payload, undefined, 2) + '\n' + '\n';
 
@@ -101,7 +99,7 @@ export default {
       this.onscreenLogs += JSON.stringify(jwk, undefined, 2) + '\n' + '\n';
 
       this.onscreenLogs += 'COSE Verification using the resolved public key and CWT process:' + '\n';
-      await this.verifySignature(jwk, base32DecodedBuffer);
+      await this.verifySignature(jwk, decodedBuffer);
       this.onscreenLogs += 'Result: Signature matches, no tempering detected in payload.' + '\n' + '\n';
 
       return payload;
@@ -121,7 +119,7 @@ export default {
       const iss = payload.iss;
       const absoluteKeyReference = `${iss}#${kid}`;
 
-      if(iss !== "did:web:nzcp.identity.health.nz") {
+      if (iss !== "did:web:nzcp.identity.health.nz") {
         throw 'Not a New Zealand Ministry of Health trusted issuer';
       }
 
@@ -130,6 +128,7 @@ export default {
       //       throw 'Unable to fetch authority DID';
       //     });
       // Hard coded because getting CORS error on GET: https://nzcp.identity.health.nz/.well-known/did.json
+      // This will need to be implemented as a proxy
       // TODO: Store authority in LocalStorage for 15 days
       const authority = {
         "data": {
@@ -162,18 +161,17 @@ export default {
         throw 'Key mismatch';
       }
 
-      if (!authorityData['verificationMethod'][0]['type'] === 'JsonWebKey2020') {
+      if (!(authorityData['verificationMethod'][0]['type'] === 'JsonWebKey2020')) {
         throw 'Verification method failure';
       }
 
       return authorityData['verificationMethod'][0]['publicKeyJwk'];
     },
-    async decodeHeaders(hexString) {
-      const decodedHeaderObject = await this.decodeCborForKey(0, hexString);
-
+    async decodeHeaders(buffer) {
+      const decodedPayload = await cbor.decodeAll(buffer);
+      const decodedHeaderObject = Object.fromEntries(decodedPayload[0]);
       const kidBuffer = decodedHeaderObject[4];
       const algVal = decodedHeaderObject[1];
-
       const kidVal = new Buffer(kidBuffer).toString();
 
       // Hard coded because: https://nzcp.covid19.health.nz/#cwt-headers
@@ -183,25 +181,18 @@ export default {
           'alg': 'ES256'
         }
       } else {
-        throw 'Unable to extract headers!';
+        throw 'unable to extract headers';
       }
     },
-    async decodeCborForKey(cborKey, hexString) {
-      const decodedHex = await cborLib.decodeAll(hexString);
-      const payloadString = decodedHex[0].value[cborKey];
 
-      const decodedPayload = await cborLib.decodeAll(payloadString);
-      return Object.fromEntries(decodedPayload[0]);
-    },
-    async decodePayload(hexString) {
-      const decodedPayloadObject = await this.decodeCborForKey(2, hexString);
+    async decodePayload(buffer) {
+      const decodedPayload = await cbor.decodeAll(buffer);
+      const decodedPayloadObject = Object.fromEntries(decodedPayload[0]);
       const hexUiid = 'urn:uuid:' + this.formatHex2Uiid(this.buffer2hex(decodedPayloadObject[7]));
       const expiryDate = new Date(decodedPayloadObject[4] * 1000);
-
-      if(new Date().getTime() - expiryDate.getTime() > 0) {
-        throw 'Pass expired';
+      if (new Date().getTime() - expiryDate.getTime() > 0) {
+        throw 'pass expired';
       }
-
       return {
         "iss": decodedPayloadObject[1],
         "exp": decodedPayloadObject[4],
