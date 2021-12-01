@@ -59,11 +59,9 @@ export default {
       return this.isValid === undefined
           && this.camera === 'off';
     },
-
     validationSuccess() {
       return this.isValid === true;
     },
-
     validationFailure() {
       return this.isValid === false;
     }
@@ -184,7 +182,6 @@ export default {
         throw 'unable to extract headers';
       }
     },
-
     async decodePayload(buffer) {
       const decodedPayload = await cbor.decodeAll(buffer);
       const decodedPayloadObject = Object.fromEntries(decodedPayload[0]);
